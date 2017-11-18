@@ -1,26 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/wait.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <signal.h>
-#include <vector>
-#include <string>
-#include <Equals>
+#include "utilities.h"
 
-#define PORT "3490" // the port users will be connecting to
-#define BACKLOG 10 // how many pending connections queue will hold
-#define HTTP_GET 0
-#define HTTP_POST 1
-#define OK_MSG "HTTP/1.0 200 OK\r\n"
-#define ERROR_MSG "HTTP/1.0 404 Not Found\r\n"
-
+using namespace std;
 
 void sigchld_handler(int s) {
     while (waitid(-1, NULL, WNOHANG) > 0);
@@ -41,10 +21,10 @@ send_response(int new_fd, string &response) {
 
 
 void parse_get_request(int new_fd, vector <string> request) {
-    string file_format = request[4];
+    string file_format = get_file_format(request);
     int result;
     string response;
-    std::string file_name = request[1];
+    string file_name = request[1];
 
     if (!file_found(file_name)) {
         response = ERROR_MSG;
@@ -54,14 +34,14 @@ void parse_get_request(int new_fd, vector <string> request) {
 
     send_response(new_fd, response);
 
-    if (file_format.Equals("html") == 0) {
+    if (file_format.compare("html") == 0) {
         // send html
-    } else if (file_format.Equals("txt") == 0) {
+    } else if (file_format.compare("txt") == 0) {
         // send txt
-    } else if (file_format.Equals("img") == 0) {
+    } else if (file_format.compare("img") == 0) {
         // send img
     } else {
-        // error
+        printf("Get file type not found !");
     }
 }
 
@@ -71,11 +51,11 @@ void parse_post_request(int new_fd, vector <string> request) {
 
     string file_format = request[4];
 
-    if (file_format.Equals("html") == 0) {
+    if (file_format.compare("html") == 0) {
         // receive html
-    } else if (file_format.Equals("txt") == 0) {
+    } else if (file_format.compare("txt") == 0) {
         // receive txt
-    } else if (file_format.Equals("img") == 0) {
+    } else if (file_format.compare("img") == 0) {
         // receive img
     } else {
         // error
@@ -156,12 +136,18 @@ int main(void) {
         printf("server: got connection from %s\n", s);
         if (!fork()) { // this is the child process
             close(sockfd); // child doesn't need the listener
-
-            std::vector <std::string> file = loadFile();
-            if (file[0].Equals("GET") == 0 || file[0].Equals("get") == 0) {
-                parse_get_request(new_fd, file);
+            char data[256];
+            int id = recv(new_fd, data, 255, 0);
+            if (id < 0) {
+                perror("recv");
+                exit(1);
+            }
+            string str(data);
+            vector <string> parsed_request = parse_request(str);
+            if (parsed_request[0].compare("GET") == 0 || parsed_request[0].compare("get") == 0) {
+                parse_get_request(new_fd, parsed_request);
             } else {
-                parse_post_request(new_fd, file);
+                parse_post_request(new_fd, parsed_request);
             }
 
             close(new_fd);
