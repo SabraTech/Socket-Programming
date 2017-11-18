@@ -7,17 +7,14 @@
 using namespace std;
 
 
-vector <string> split(string s, string delimiter) {
-    size_t pos = 0;
-    vector <string> ans;
-    string token;
-    while ((pos = s.find(delimiter)) != string::npos) {
-        token = s.substr(0, pos);
-        ans.push_back(token);
-        s.erase(0, pos + delimiter.length());
+vector <string> split(string line, string delimiter) {
+    char *temp = strtok(line, delimiter);
+    vector <string> result;
+    while (temp != NULL) {
+        result.push_back(temp);
+        temp = strtok(NULL, delimeter);
     }
-    ans.push_back(s);
-    return ans;
+    return result;
 }
 
 vector <string> parse_request(string request) {
@@ -46,4 +43,37 @@ string get_file_format(vector <string> request) {
     } else {
         return format;
     }
+}
+
+vector <string> read_file(string file_name) {
+    vector <string> vec;
+    ifstream myFile(file_name);
+    string line;
+    if (myFile.is_open()) {
+        while (getline(myFile, line)) {
+            vec.push_back(line);
+        }
+    } else {
+        cout << "Can not open the file" << endl;
+    }
+    myFile.close();
+    return vec;
+}
+
+string make_request(string request) {
+    string result;
+    string file_format;
+    vector <string> request_lines = split(request, " ");
+    for (int i = 0; i < request_lines.size() - 1; i++) {
+        if (i == 2) {
+            result.append("HTTP/1.1");
+            result.append("\n");
+            result.append("Host:");
+            result.append(" ");
+        }
+        result.append(request_lines[i]);
+        result.append(" ");
+    }
+    result.append("\n");
+    return result;
 }

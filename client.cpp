@@ -58,7 +58,26 @@ int main(int argc, char *argv[]) {
     freeaddrinfo(servinfo); // all done with this structure
 
     //
-    vector <string> file = parse_file("example.txt");
+    vector <string> file = read_file("example.txt");
+
+    for (int i = 0; i < file.size(); i++) {
+        string request = make_request(file[i]);
+        vector <string> parsed_request = parse_request(request);
+        if (send(sockfd, request.c_str(), request.size(), 0) == -1) {
+            perror("send");
+        }
+        // check the type of request
+        if (parsed_request[0].compare("GET") == 0 || parsed_request[0].compare("get") == 0) {
+            char buffer[MAXDATASIZE];
+            int result = recv(sockfd, buffer, MAXDATASIZE, 0);
+            if (result < 0) {
+                perror("recv");
+                exit(1);
+            }
+        } else {
+            // post
+        }
+    }
 
 
     if ((numbytes = recv(sockfd, buf, MAXDATASIZE - 1, 0)) == -1) {

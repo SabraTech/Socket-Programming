@@ -38,5 +38,9 @@ vector <string> parse_request(string request);
 
 string get_file_format(vector <string> request);
 
+vector <string> read_file(string file_name);
+
+string make_request(string request);
+
 
 #endif //SOCKET_PROGRAMMING_UTILITIES_H
