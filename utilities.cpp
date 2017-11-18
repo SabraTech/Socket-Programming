@@ -8,13 +8,16 @@ using namespace std;
 
 
 vector <string> split(string line, string delimiter) {
-    char *temp = strtok(line, delimiter);
-    vector <string> result;
-    while (temp != NULL) {
-        result.push_back(temp);
-        temp = strtok(NULL, delimeter);
+    size_t pos = 0;
+    vector <string> ans;
+    string token;
+    while ((pos = line.find(delimiter)) != string::npos) {
+        token = line.substr(0, pos);
+        ans.push_back(token);
+        line.erase(0, pos + delimiter.length());
     }
-    return result;
+    ans.push_back(line);
+    return ans;
 }
 
 vector <string> parse_request(string request) {

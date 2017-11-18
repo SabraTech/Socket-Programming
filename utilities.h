@@ -32,7 +32,7 @@
 
 using namespace std;
 
-vector <string> split(string s, string delimiter);
+vector <string> split(string line, string delimiter);
 
 vector <string> parse_request(string request);
 

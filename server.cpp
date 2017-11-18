@@ -15,15 +15,21 @@ void *get_in_addr(struct sockaddr *sa) {
     return &(((struct sockaddr_in6 *) sa)->sin6_addr);
 }
 
-send_response(int new_fd, string &response) {
-
+send_response(int new_fd, char *response) {
+    int i;
+    if ((i = send(new_fd, response, strlen(response), 0)) == -1) {
+        perror("send response");
+    }
 }
 
+bool file_found(string file_name) {
+    return true;
+}
 
 void parse_get_request(int new_fd, vector <string> request) {
     string file_format = get_file_format(request);
     int result;
-    string response;
+    char *response;
     string file_name = request[1];
 
     if (!file_found(file_name)) {
